@@ -1,0 +1,18 @@
+---
+- name: Set Hostname
+  hosts: server
+  tasks:
+    - name: get name
+      debug:
+        var: ansible_hostname
+    - name: set name
+      command:
+        cmd: "hostnamectl set-hostname {{ hostname }}"
+    - name: Unconditionally reboot the machine with all defaults
+      reboot:      
+    - name: Print system uptime
+      shell: hostname
+      register: system_hostname
+    - name: Print uptime of managed node
+      debug:
+        msg: "{{ system_hostname.stdout }}"      
