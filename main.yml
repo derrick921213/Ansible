@@ -1,0 +1,63 @@
+# ---
+# - name: test
+#   hosts: localhost
+#   connection: local
+#   gather_facts: true
+
+#   vars_prompt:
+#     - name: "one"
+#       prompt: "Please input your value"
+#       private: false
+
+# ---
+# - name: Main Playbook
+#   hosts: "{{ variable_host | default('all') }}"
+#   gather_facts: yes  # 是否收集目標主機的 facts
+
+#   tasks:
+#     - name: Include Playbook 1
+#       include_playbook: playbook1.yml
+#       when: run_playbook1  # 只有在 run_playbook1 為 true 時才執行
+
+#     - name: Include Playbook 2
+#       include_playbook: playbook2.yml
+#       when: run_playbook2  # 只有在 run_playbook2 為 true 時才執行
+---
+- name: Main Playbook
+  vars:
+    file_location: "./playbooks/remote"
+  vars_prompt:
+    - name: "host"
+      prompt: "Which host want to run?"
+      private: false
+      default: "all"
+    - name: "facts"
+      prompt: "Enable facts?"
+      private: false
+      default: "true"
+    - name: "con_method"
+      prompt: "Which connection?"
+      private: false
+      default: "ssh"
+    - name: "playbook"
+      prompt: "Which playbook needs to be executed"
+      private: false
+    
+  hosts: "{{ host }}"
+  gather_facts: "{{ facts }}"  # 使用變數設定 gather_facts
+  connection: "{{ con_method }}"
+  tasks:
+    - name: Change file location to local
+      set_fact:
+        file_location: "./playbooks/local"
+      when: inventory_hostname == 'localhost'
+    - name: Check file exists
+      stat:
+        path: "{{ file_location }}/{{ playbook }}"
+      register: file_ret
+    - include_tasks: "{{ file_location }}/{{ playbook }}"
+      when: file_ret.stat.exists
+    - name: show
+      debug:
+        var:
+          file_ret

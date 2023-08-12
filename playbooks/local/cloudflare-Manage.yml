@@ -1,0 +1,16 @@
+---
+- name: Cloudflare DNS
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_prompt:
+    - name: "one"
+      prompt: "Please input your value"
+      private: false
+  # vars_files: 
+  #   - cloudflare_api.yml
+  tasks:
+    - name: "display value"
+      debug:
+        msg: "one value is {{ one }}"
+      when: one == "abcd"
